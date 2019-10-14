@@ -1,0 +1,13 @@
+{
+  "name": "pt-mainnet-cli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "count": "node src/count-players.js"
+  },
+  "dependencies": {
+    "apollo-fetch": "^0.7.0",
+    "ethers": "^4.0.37"
+  }
+}

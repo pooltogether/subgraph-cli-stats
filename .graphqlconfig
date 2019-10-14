@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "PoolTogether mainnet": {
+      "schemaPath": "schema.graphql",
+      "extensions": {
+        "endpoints": {
+          "default": {
+            "url": "https://api.thegraph.com/subgraphs/name/asselstine/pooltogether",
+            "subscription": "wss://api.thegraph.com/subgraphs/name/asselstine/pooltogether"
+          }
+        }
+      }
+    }
+  }
+}
