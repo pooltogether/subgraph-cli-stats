@@ -22,6 +22,16 @@ var leftPlayersQuery = `
   }
 `
 
+var currentPlayersQuery = `
+  query currentPlayers($first: Int!, $skip: Int!) {
+    players (first: $first, skip: $skip, where: { balance_gt: 0 }, orderBy: balance) {
+      id
+      balance
+      sponsorshipBalance
+    }
+  }
+`
+
 async function fetchAllPlayers(query) {
   const pageSize = 1000
   let players = []
@@ -40,16 +50,18 @@ async function fetchAllPlayers(query) {
   return players
 }
 
-async function doIt() {
-  let allPlayers = await fetchAllPlayers(allPlayersQuery)
-  console.log('Total Player count: ', allPlayers.length)
-
-  const leftPlayers = await fetchAllPlayers(leftPlayersQuery)
-  console.log('Left player count: ', leftPlayers.length)
-
-  console.log('Current player count: ', allPlayers.length - leftPlayers.length)
+async function allPlayers() {
+  return await fetchAllPlayers(allPlayersQuery);
 }
 
-doIt().catch(e => {
-  console.error(e)
-})
+async function leftPlayers() {
+  return await fetchAllPlayers(leftPlayersQuery)
+}
+
+async function currentPlayers() {
+  return await fetchAllPlayers(currentPlayersQuery)
+}
+
+module.exports = {
+  allPlayers, leftPlayers, currentPlayers
+}

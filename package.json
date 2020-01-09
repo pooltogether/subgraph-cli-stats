@@ -4,10 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "count": "node src/count-players.js"
+    "count": "./src/cli.js count"
   },
   "dependencies": {
     "apollo-fetch": "^0.7.0",
+    "commander": "^4.1.0",
     "ethers": "^4.0.37"
   }
 }
