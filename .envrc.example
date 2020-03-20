@@ -1,2 +1,2 @@
-export GRAPHQL_ENDPOINT_URI=https://api.thegraph.com/subgraphs/name/asselstine/pooltogether
-export GRAPHQL_SUBSCRIPTION_URI=wss://api.thegraph.com/subgraphs/name/asselstine/pooltogether
+export GRAPHQL_ENDPOINT_URI=https://api.thegraph.com/subgraphs/name/pooltogether/pooltogether
+export GRAPHQL_SUBSCRIPTION_URI=wss://api.thegraph.com/subgraphs/name/pooltogether/pooltogether
