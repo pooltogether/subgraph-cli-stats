@@ -2,8 +2,17 @@ const apolloFetch = require('apollo-fetch')
 
 var fetch = apolloFetch.createApolloFetch({ uri: process.env.GRAPHQL_ENDPOINT_URI });
 
-var lifetimesQuery = `
-  query userLifetimesQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
+var allUsers = `
+  query allUsersQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
+    userLifetimes (first: $first, skip: $skip, where: { firstDepositAmount_gt: $depositThreshold }) {
+      id
+      lifetime
+    }
+  }
+`
+
+var usersWhoHaveWithdrawn = `
+  query usersWhoHaveWithdrawnQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
     userLifetimes (first: $first, skip: $skip, where: { lifetime_not: 0, firstDepositAmount_gt: $depositThreshold }) {
       id
       lifetime
@@ -11,8 +20,8 @@ var lifetimesQuery = `
   }
 `
 
-var foreverQuery = `
-  query foreverQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
+var usersWhoHaveNotWithdrawn = `
+  query usersWhoHaveNotWithdrawnQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
     userLifetimes (first: $first, skip: $skip, where: { lifetime: 0, firstDepositAmount_gt: $depositThreshold }) {
       id
       lifetime
@@ -20,7 +29,7 @@ var foreverQuery = `
   }
 `
 
-async function fetchLifetimes(query, variables = {}) {
+async function fetchAllPages(query, variables = {}) {
   const pageSize = 1000
   let userLifetimes = []
   let page = 0
@@ -44,14 +53,20 @@ async function fetchLifetimes(query, variables = {}) {
   return userLifetimes
 }
 
-async function fetchAllLifetimes(variables = {}) {
-  return await fetchLifetimes(lifetimesQuery, variables);
+async function fetchAllUsers(variables = {}) {
+  return await fetchAllPages(allUsers, variables);
 }
 
-async function fetchAllForever(variables = {}) {
-  return await fetchLifetimes(foreverQuery, variables);
+async function fetchUsersWhoHaveWithdrawn(variables = {}) {
+  return await fetchAllPages(usersWhoHaveWithdrawn, variables);
+}
+
+async function fetchUsersWhoHaveNotWithdrawn(variables = {}) {
+  return await fetchAllPages(usersWhoHaveNotWithdrawn, variables);
 }
 
 module.exports = {
-  fetchAllLifetimes, fetchAllForever
+  fetchAllUsers,
+  fetchUsersWhoHaveWithdrawn,
+  fetchUsersWhoHaveNotWithdrawn
 }

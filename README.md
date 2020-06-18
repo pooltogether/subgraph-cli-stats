@@ -2,4 +2,4 @@
 
 Run:
 
-`yarn count`
+`yarn cli -h`

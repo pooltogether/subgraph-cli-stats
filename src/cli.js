@@ -4,26 +4,28 @@ const stats = require("stats-lite")
 const chalk = require('chalk')
 const assert = require('assert')
 const {
-  fetchAllLifetimes,
-  fetchAllForever
+  fetchUsersWhoHaveWithdrawn,
+  fetchUsersWhoHaveNotWithdrawn,
+  fetchAllUsers
 } = require('./fetch-lifetimes')
 const ethers = require('ethers')
 
 program
   .command('average')
   .option('-p, --percentile <number>', 'percentile to use (0 < whole number < 100)', 85)
-  .option('-d, --depositThreshold <dai>', 'the minimum deposit', 0)
+  .option('-d, --depositThreshold <dai>', 'the minimum deposit', '0')
   .description('returns the average lifetime')
   .action(async ({ percentile, depositThreshold }) => {
-    assert.ok(percentile > 0 && percentile < 100, "percentile is between 0 and 100")
+    assert.ok(percentile > 0 && percentile <= 100, "percentile is between 0 and 100")
 
     const depositThresholdWei = ethers.utils.parseEther(depositThreshold).toString()
 
     console.log(chalk.cyan(`Minimum first deposit size of ${depositThreshold} Dai`))
 
-    let foreverLifetimes = await fetchAllForever({ depositThreshold: depositThresholdWei })
-    let allLifetimes = await fetchAllLifetimes({ depositThreshold: depositThresholdWei })
-    let lifetimes = allLifetimes.map(al => al.lifetime)
+    let allUsers = await fetchAllUsers({ depositThreshold: depositThresholdWei })
+    let usersWhoHaveNotWithdrawn = await fetchUsersWhoHaveNotWithdrawn({ depositThreshold: depositThresholdWei })
+    let usersWhoHaveWithdrawn = await fetchUsersWhoHaveWithdrawn({ depositThreshold: depositThresholdWei })
+    let lifetimes = usersWhoHaveWithdrawn.map(al => al.lifetime)
 
     const median = stats.median(lifetimes)
     const stdev = stats.stdev(lifetimes)
@@ -35,13 +37,13 @@ program
     const secondsToDays = (seconds) => seconds / (3600 * 24.0)
 
     console.log(chalk.dim('---------------------------------------------'))
-    console.log(chalk.green(`Number of non-zero lifetimes: ${lifetimes.length}`))
+    console.log(chalk.green(`Number of users: ${allUsers.length}`))
+    console.log(chalk.green(`Number of users who have withdrawn: ${usersWhoHaveWithdrawn.length}`))
+    console.log(chalk.green(`Number of users who have not withdrawn: ${usersWhoHaveNotWithdrawn.length}`))
     console.log(chalk.green('Lifetime is duration between first deposit and first withdrawal'))
     console.log(chalk.yellow(`Median: ${secondsToDays(median)} days`))
     console.log(chalk.yellow(`Standard deviation: ${secondsToDays(stdev)} days`))
     console.log(chalk.yellow(`${fraction * 100} percentile: ${secondsToDays(percentileValue)} days`))
-    console.log(chalk.dim('---------------------------------------------'))
-    console.log(chalk.green(`Number of people who have never withdrawn: ${foreverLifetimes.length}`))
     console.log(chalk.dim('---------------------------------------------'))
   })
 
