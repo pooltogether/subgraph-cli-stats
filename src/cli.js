@@ -10,9 +10,11 @@ const {
 } = require('./fetch-lifetimes')
 const ethers = require('ethers')
 
+const secondsToDays = (seconds) => seconds / (3600 * 24.0)
+
 program
   .command('average')
-  .option('-p, --percentile <number>', 'percentile to use (0 < whole number < 100)', 85)
+  // .option('-p, --percentile <number>', 'percentile to use (0 < whole number < 100)', 85)
   .option('-d, --depositThreshold <dai>', 'the minimum deposit', '0')
   .description('returns the average lifetime')
   .action(async ({ percentile, depositThreshold }) => {
@@ -30,11 +32,12 @@ program
     const median = stats.median(lifetimes)
     const stdev = stats.stdev(lifetimes)
 
-    const fraction = percentile / 100.0
-
-    const percentileValue = stats.percentile(lifetimes, fraction)
-
-    const secondsToDays = (seconds) => seconds / (3600 * 24.0)
+    const percentiles = []
+    for (let i = 10; i < 100; i += 10) {
+      const fraction = i / 100.0
+      const percentileValue = stats.percentile(lifetimes, fraction)
+      percentiles.push(`${fraction * 100} percentile: ${secondsToDays(percentileValue)} days`)
+    }
 
     console.log(chalk.dim('---------------------------------------------'))
     console.log(chalk.green(`Number of users: ${allUsers.length}`))
@@ -43,7 +46,7 @@ program
     console.log(chalk.green('Lifetime is duration between first deposit and first withdrawal'))
     console.log(chalk.yellow(`Median: ${secondsToDays(median)} days`))
     console.log(chalk.yellow(`Standard deviation: ${secondsToDays(stdev)} days`))
-    console.log(chalk.yellow(`${fraction * 100} percentile: ${secondsToDays(percentileValue)} days`))
+    console.log(chalk.yellow(percentiles.join('\n')))
     console.log(chalk.dim('---------------------------------------------'))
   })
 
