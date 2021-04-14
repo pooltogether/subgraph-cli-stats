@@ -3,44 +3,46 @@ const apolloFetch = require('apollo-fetch')
 var fetch = apolloFetch.createApolloFetch({ uri: process.env.GRAPHQL_ENDPOINT_URI });
 
 var allUsers = `
-  query allUsersQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
-    userLifetimes (first: $first, skip: $skip, where: { firstDepositAmount_gt: $depositThreshold }) {
+  query allUsersQuery($first: Int!, $lastDepositedAt: Int!, $depositThreshold: String!) {
+    userLifetimes (first: $first, orderBy: firstDepositAt, orderDirection: asc, where: { firstDepositAt_gt: $lastDepositedAt, firstDepositAmount_gt: $depositThreshold }) {
       id
       lifetime
+      firstDepositAt
     }
   }
 `
 
 var usersWhoHaveWithdrawn = `
-  query usersWhoHaveWithdrawnQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
-    userLifetimes (first: $first, skip: $skip, where: { lifetime_not: 0, firstDepositAmount_gt: $depositThreshold }) {
+  query usersWhoHaveWithdrawnQuery($first: Int!, $lastDepositedAt: Int!, $depositThreshold: String!) {
+    userLifetimes (first: $first, orderBy: firstDepositAt, orderDirection: asc, where: { firstDepositAt_gt: $lastDepositedAt, firstDepositAmount_gt: $depositThreshold, lifetime_not: 0 }) {
       id
       lifetime
+      firstDepositAt
     }
   }
 `
 
 var usersWhoHaveNotWithdrawn = `
-  query usersWhoHaveNotWithdrawnQuery($first: Int!, $skip: Int!, $depositThreshold: String!) {
-    userLifetimes (first: $first, skip: $skip, where: { lifetime: 0, firstDepositAmount_gt: $depositThreshold }) {
+  query usersWhoHaveNotWithdrawnQuery($first: Int!, $lastDepositedAt: Int!, $depositThreshold: String!) {
+    userLifetimes (first: $first, orderBy: firstDepositAt, orderDirection: asc, where: { firstDepositAt_gt: $lastDepositedAt, firstDepositAmount_gt: $depositThreshold, lifetime: 0 }) {
       id
       lifetime
+      firstDepositAt
     }
   }
 `
 
 async function fetchAllPages(query, variables = {}) {
-  const pageSize = 1000
+  const first = 1000
   let userLifetimes = []
-  let page = 0
+  let lastDepositedAt = 0
   let hasMore = true
   while (hasMore) {
-    page += 1
     let userLifetimesPage = await fetch({
       query,
       variables: {
-        first: pageSize,
-        skip: pageSize * (page-1),
+        first,
+        lastDepositedAt,
         ...variables
       }
     })
@@ -48,7 +50,8 @@ async function fetchAllPages(query, variables = {}) {
       console.error(userLifetimesPage.errors)
     }
     userLifetimes = userLifetimes.concat(userLifetimesPage.data.userLifetimes)
-    hasMore = userLifetimesPage.data.userLifetimes.length === pageSize
+    hasMore = userLifetimesPage.data.userLifetimes.length === first
+    lastDepositedAt = parseInt(userLifetimesPage.data.userLifetimes[userLifetimesPage.data.userLifetimes.length - 1].firstDepositAt)
   }
   return userLifetimes
 }

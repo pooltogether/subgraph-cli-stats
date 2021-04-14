@@ -14,7 +14,7 @@ const secondsToDays = (seconds) => seconds / (3600 * 24.0)
 
 program
   .command('average')
-  // .option('-p, --percentile <number>', 'percentile to use (0 < whole number < 100)', 85)
+  .option('-p, --percentile <number>', 'percentile to use (0 < whole number < 100)', 85)
   .option('-d, --depositThreshold <dai>', 'the minimum deposit', '0')
   .description('returns the average lifetime')
   .action(async ({ percentile, depositThreshold }) => {
